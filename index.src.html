@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="__CSP__">
+<title>Boveda de Herencia BTC</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23f7931a'/%3E%3Ctext x='16' y='23' font-family='Arial,sans-serif' font-size='20' font-weight='bold' fill='%231a1200' text-anchor='middle'%3E%E2%82%BF%3C/text%3E%3C/svg%3E">
+<style>__CSS__</style>
+</head>
+<body>
+<div class="app">
+
+<div class="topbar">
+  <div class="brand"><span class="coin">₿</span> <span data-i18n="topbar.brand">Bóveda de Herencia BTC</span></div>
+  <div class="topbar-actions">
+    <button class="theme-toggle" id="lang-toggle" type="button" data-i18n="topbar.lang.toEnglish">🌐 English</button>
+    <button class="theme-toggle" id="theme-toggle" type="button" data-i18n="topbar.theme.toLight">☀ Modo claro</button>
+  </div>
+</div>
+
+<main>
+
+<section id="screen-intro" class="screen">
+  <div class="panel">
+    <div class="notice notice-info" data-i18n="notice.intro">Intro</div>
+    <div class="notice notice-warning" data-i18n="notice.warning">Warning</div>
+    <div class="actions-row">
+      <button type="button" id="intro-setup-btn" class="btn-primary" data-i18n="nav.setup">Crear una bóveda</button>
+      <button type="button" id="intro-claim-btn" class="btn-secondary" data-i18n="nav.claim">Armar un reclamo (PSBT)</button>
+    </div>
+  </div>
+</section>
+
+<section id="screen-setup" class="screen" hidden>
+  <div class="panel">
+    <h2 data-i18n="setup.title">Datos del owner</h2>
+    <label class="field">
+      <span data-i18n="setup.network.label">Red</span>
+      <select id="network-select">
+        <option value="mainnet" data-i18n="setup.network.mainnet">Mainnet</option>
+        <option value="testnet" data-i18n="setup.network.testnet">Testnet</option>
+        <option value="regtest" data-i18n="setup.network.regtest">Regtest (pruebas locales)</option>
+      </select>
+    </label>
+    <label class="field">
+      <span data-i18n="setup.ownerKey.label">Tu clave (owner)</span>
+      <input type="text" id="owner-key-input" class="mono" autocomplete="off" placeholder="[fgp/86h/0h/0h]xpub...">
+    </label>
+    <p class="hint" data-i18n="setup.ownerKey.hint">hint</p>
+  </div>
+
+  <div class="panel">
+    <h2 data-i18n="setup.heirs.title">Herederos</h2>
+    <div id="heir-rows"></div>
+    <div class="actions-row">
+      <button type="button" id="add-heir-btn" class="btn-secondary" data-i18n="setup.heirs.add">+ Agregar heredero</button>
+    </div>
+  </div>
+
+  <p id="setup-error" class="error" hidden></p>
+  <div class="actions-row">
+    <button type="button" id="setup-back-btn" class="btn-secondary" data-i18n="nav.back">← Atrás</button>
+    <button type="button" id="setup-generate-btn" class="btn-primary" data-i18n="setup.generate">Generar bóvedas</button>
+  </div>
+</section>
+
+<section id="screen-result" class="screen" hidden>
+  <div class="panel">
+    <h2 data-i18n="result.title">Tus bóvedas</h2>
+    <div class="notice notice-warning" data-i18n="result.warning">warning</div>
+    <div id="vault-list"></div>
+    <div class="actions-row">
+      <button type="button" id="result-download-registry-btn" class="btn-primary" data-i18n="result.downloadRegistry">⬇ Descargar mi registro (owner)</button>
+      <button type="button" id="result-restart-btn" class="btn-secondary" data-i18n="result.restart">Volver a empezar</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2 data-i18n="result.encrypt.title">Exportar mi registro cifrado (opcional)</h2>
+    <p class="hint" data-i18n="result.encrypt.hint">hint</p>
+    <label class="field">
+      <span data-i18n="result.encrypt.password.label">Contraseña de cifrado</span>
+      <input type="password" id="encrypt-password-input" autocomplete="off">
+    </label>
+    <div class="strength-meter" id="encryptStrengthMeter"><div></div><div></div><div></div><div></div></div>
+    <div class="strength-label" id="encryptStrengthLabel" data-i18n="strength.emptyPassphrase">Sin contraseña</div>
+    <p id="encrypt-error" class="error" hidden></p>
+    <div class="actions-row">
+      <button type="button" id="result-download-encrypted-btn" class="btn-primary" data-i18n="result.encrypt.download">⬇ Descargar registro cifrado (.txt)</button>
+    </div>
+  </div>
+</section>
+
+<section id="screen-claim" class="screen" hidden>
+  <div class="panel">
+    <h2 data-i18n="claim.title">Armar un reclamo</h2>
+    <p class="hint" data-i18n="claim.hint">hint</p>
+    <label class="field">
+      <span data-i18n="claim.kit.label">Kit / registro (JSON)</span>
+      <textarea id="claim-kit-input" rows="6" autocomplete="off" spellcheck="false"></textarea>
+      <div class="file-load-row">
+        <button type="button" class="btn-secondary" id="claim-kit-file-btn" data-i18n="fileLoad.button">📁 Cargar desde archivo</button>
+        <input type="file" id="claim-kit-file-input" accept=".txt,text/plain,.json" hidden>
+      </div>
+    </label>
+    <label class="field" id="claim-vault-select-wrap" hidden>
+      <span data-i18n="claim.vaultSelect.label">Bóveda</span>
+      <select id="claim-vault-select"></select>
+    </label>
+    <p id="claim-kit-error" class="error" hidden></p>
+  </div>
+
+  <div class="panel" id="claim-details-panel" hidden>
+    <h2 data-i18n="claim.details.title">Datos del UTXO y del reclamo</h2>
+    <p class="hint" data-i18n="claim.details.hint">hint</p>
+    <div class="heir-row-grid">
+      <label class="field field-full">
+        <span data-i18n="claim.txid.label">Txid de la transacción que fondeó la bóveda</span>
+        <input type="text" id="claim-txid-input" class="mono" autocomplete="off">
+      </label>
+      <label class="field">
+        <span data-i18n="claim.vout.label">Índice del output (vout)</span>
+        <input type="number" id="claim-vout-input" min="0" step="1" value="0">
+      </label>
+      <label class="field">
+        <span data-i18n="claim.amount.label">Monto del UTXO (sats)</span>
+        <input type="number" id="claim-amount-input" min="1" step="1">
+      </label>
+      <label class="field field-full">
+        <span data-i18n="claim.destination.label">Dirección de destino</span>
+        <input type="text" id="claim-destination-input" class="mono" autocomplete="off">
+      </label>
+      <label class="field">
+        <span data-i18n="claim.fee.label">Fee (sats)</span>
+        <input type="number" id="claim-fee-input" min="1" step="1" value="1000">
+      </label>
+      <label class="field">
+        <span data-i18n="claim.derivationIndex.label">Índice de derivación de tu clave</span>
+        <input type="number" id="claim-derivation-index-input" min="0" step="1" value="0">
+      </label>
+    </div>
+    <p id="claim-build-error" class="error" hidden></p>
+    <div class="actions-row">
+      <button type="button" id="claim-build-btn" class="btn-primary" data-i18n="claim.build">Construir PSBT sin firmar</button>
+    </div>
+  </div>
+
+  <div class="panel" id="claim-output-panel" hidden>
+    <h2 data-i18n="claim.output.title">PSBT sin firmar</h2>
+    <p class="hint" data-i18n="claim.output.hint">hint</p>
+    <label class="field">
+      <textarea id="claim-output" class="mono" rows="8" readonly></textarea>
+    </label>
+    <div class="actions-row">
+      <button type="button" id="claim-download-btn" class="btn-secondary" data-i18n="claim.output.download">⬇ Descargar PSBT (.txt)</button>
+    </div>
+  </div>
+
+  <div class="actions-row">
+    <button type="button" id="claim-back-btn" class="btn-secondary" data-i18n="nav.back">← Atrás</button>
+  </div>
+</section>
+
+</main>
+
+<p class="footer-note" data-i18n="footer.note">footer</p>
+
+</div>
+<script>__SCRIPT__</script>
+</body>
+</html>

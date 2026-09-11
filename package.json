@@ -1,0 +1,25 @@
+{
+  "name": "inheritance-vault-btc",
+  "version": "1.0.0",
+  "description": "Boveda de herencia Bitcoin 100% del lado del cliente: arma una direccion Taproot por heredero (key-path=owner, script-path=heredero+timelock CSV) a partir de xpubs, y exporta PSBTs sin firmar para que el owner reclame en cualquier momento o cada heredero reclame una vez vencido su timelock. Nunca toca una clave privada - firmar sigue siendo trabajo de PSBT Signer BTC.",
+  "main": "index.js",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@noble/ciphers": "^2.4.0",
+    "@noble/hashes": "^2.4.0",
+    "@scure/base": "^2.4.0",
+    "@scure/bip32": "^2.4.0",
+    "@scure/btc-signer": "^2.4.1",
+    "zxcvbn": "^4.4.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
+  }
+}
